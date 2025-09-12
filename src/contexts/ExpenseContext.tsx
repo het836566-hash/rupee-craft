@@ -103,7 +103,10 @@ export const ExpenseProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const getCategoryTotals = (): Record<string, { total: number; count: number }> => {
     const categoryTotals: Record<string, { total: number; count: number }> = {};
     
+    console.log('Processing transactions for category totals:', transactions);
+    
     transactions.forEach(transaction => {
+      console.log('Processing transaction:', transaction);
       if (!categoryTotals[transaction.category]) {
         categoryTotals[transaction.category] = { total: 0, count: 0 };
       }
@@ -111,6 +114,7 @@ export const ExpenseProvider: React.FC<{ children: React.ReactNode }> = ({ child
       categoryTotals[transaction.category].count += 1;
     });
 
+    console.log('Final category totals:', categoryTotals);
     return categoryTotals;
   };
 

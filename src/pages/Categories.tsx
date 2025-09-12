@@ -34,6 +34,8 @@ const Categories: React.FC = () => {
   };
 
   const getCategoryUsage = (categoryName: string) => {
+    console.log('Looking for category:', categoryName);
+    console.log('Available category totals:', categoryTotals);
     return categoryTotals[categoryName] || { total: 0, count: 0 };
   };
 
