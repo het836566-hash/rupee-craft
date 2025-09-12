@@ -70,17 +70,32 @@ const Settings: React.FC = () => {
         const importedData = JSON.parse(e.target?.result as string);
         
         if (importedData.transactions && Array.isArray(importedData.transactions)) {
-          // In a real app, you would merge or replace the data
-          console.log('Imported data:', importedData);
+          // Actually import the transactions into the app
+          const validTransactions = importedData.transactions.filter((t: any) => 
+            t.id && t.type && t.amount && t.category && t.date
+          );
           
-          toast({
-            title: "Import successful",
-            description: `Imported ${importedData.transactions.length} transactions.`,
-          });
+          if (validTransactions.length > 0) {
+            // Save directly to localStorage to replace current data
+            localStorage.setItem('expense-tracker-transactions', JSON.stringify(validTransactions));
+            
+            toast({
+              title: "Import successful",
+              description: `Imported ${validTransactions.length} transactions. Refreshing app...`,
+            });
+            
+            // Reload the page to reflect the imported data
+            setTimeout(() => {
+              window.location.reload();
+            }, 1500);
+          } else {
+            throw new Error('No valid transactions found in file');
+          }
         } else {
           throw new Error('Invalid data format');
         }
       } catch (error) {
+        console.error('Import error:', error);
         toast({
           title: "Import failed",
           description: "The file format is invalid or corrupted.",
