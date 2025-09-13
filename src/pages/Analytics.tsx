@@ -189,12 +189,20 @@ const Analytics: React.FC = () => {
                         </Pie>
                         <Tooltip 
                           formatter={(value: number) => [formatCurrency(value), 'Amount']}
-                          labelStyle={{ color: 'hsl(var(--foreground))' }}
+                          labelStyle={{ 
+                            color: 'hsl(var(--foreground))',
+                            fontWeight: 'bold'
+                          }}
                           contentStyle={{ 
-                            backgroundColor: 'hsl(var(--card))', 
+                            backgroundColor: 'hsl(var(--popover))', 
                             border: '1px solid hsl(var(--border))',
                             borderRadius: '8px',
-                            color: 'hsl(var(--foreground))'
+                            color: 'hsl(var(--popover-foreground))',
+                            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)'
+                          }}
+                          itemStyle={{
+                            color: 'hsl(var(--popover-foreground))',
+                            fontSize: '14px'
                           }}
                         />
                       </PieChart>
@@ -245,12 +253,20 @@ const Analytics: React.FC = () => {
                           formatCurrency(value), 
                           name === 'income' ? 'Income' : name === 'expense' ? 'Expense' : 'Net'
                         ]}
-                        labelStyle={{ color: 'hsl(var(--foreground))' }}
+                        labelStyle={{ 
+                          color: 'hsl(var(--foreground))',
+                          fontWeight: 'bold'
+                        }}
                         contentStyle={{ 
-                          backgroundColor: 'hsl(var(--card))', 
+                          backgroundColor: 'hsl(var(--popover))', 
                           border: '1px solid hsl(var(--border))',
                           borderRadius: '8px',
-                          color: 'hsl(var(--foreground))'
+                          color: 'hsl(var(--popover-foreground))',
+                          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)'
+                        }}
+                        itemStyle={{
+                          color: 'hsl(var(--popover-foreground))',
+                          fontSize: '14px'
                         }}
                       />
                       <Bar dataKey="income" fill="hsl(var(--income))" radius={[4, 4, 0, 0]} />
