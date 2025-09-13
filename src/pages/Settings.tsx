@@ -3,6 +3,8 @@ import { useExpense } from '@/contexts/ExpenseContext';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { 
   Download, 
   Upload, 
@@ -12,10 +14,12 @@ import {
   FileText,
   Shield,
   Palette,
-  Moon
+  Moon,
+  BarChart3
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
+import PreviousDataAnalytics from '@/components/PreviousDataAnalytics';
 
 const Settings: React.FC = () => {
   const { transactions } = useExpense();
@@ -23,8 +27,19 @@ const Settings: React.FC = () => {
   const [isExportDialogOpen, setIsExportDialogOpen] = useState(false);
   const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
   const [isClearDialogOpen, setIsClearDialogOpen] = useState(false);
+  const [showPreviousAnalytics, setShowPreviousAnalytics] = useState(false);
+  const [customFilename, setCustomFilename] = useState('');
 
   const handleExportData = () => {
+    if (!customFilename.trim()) {
+      toast({
+        title: "Filename required",
+        description: "Please enter a filename for your export.",
+        variant: "destructive"
+      });
+      return;
+    }
+
     try {
       const dataToExport = {
         transactions,
@@ -39,7 +54,8 @@ const Settings: React.FC = () => {
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `expense-tracker-backup-${new Date().toISOString().split('T')[0]}.json`;
+      const filename = customFilename.endsWith('.json') ? customFilename : `${customFilename}.json`;
+      a.download = filename;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -47,10 +63,11 @@ const Settings: React.FC = () => {
 
       toast({
         title: "Data exported",
-        description: "Your transaction data has been downloaded successfully.",
+        description: `Your transaction data has been downloaded as ${filename}.`,
       });
 
       setIsExportDialogOpen(false);
+      setCustomFilename('');
     } catch (error) {
       toast({
         title: "Export failed",
@@ -122,7 +139,10 @@ const Settings: React.FC = () => {
           title: 'Export Data',
           description: 'Download your transaction data as backup',
           icon: Download,
-          action: () => setIsExportDialogOpen(true),
+          action: () => {
+            setCustomFilename(`expense-backup-${new Date().toISOString().split('T')[0]}`);
+            setIsExportDialogOpen(true);
+          },
           disabled: transactions.length === 0,
         },
         {
@@ -130,6 +150,12 @@ const Settings: React.FC = () => {
           description: 'Restore data from a backup file',
           icon: Upload,
           action: () => setIsImportDialogOpen(true),
+        },
+        {
+          title: 'Previous Data Analytics',
+          description: 'Analyze uploaded JSON files with detailed charts',
+          icon: BarChart3,
+          action: () => setShowPreviousAnalytics(true),
         },
         {
           title: 'Clear All Data',
@@ -269,21 +295,36 @@ const Settings: React.FC = () => {
                 Keep this file safe as a backup.
               </AlertDescription>
             </Alert>
-            <div className="flex space-x-3">
-              <Button 
-                onClick={handleExportData}
-                className="flex-1 btn-primary-glass"
-              >
-                <Download className="w-4 h-4 mr-2" />
-                Export Data
-              </Button>
-              <Button 
-                variant="outline" 
-                onClick={() => setIsExportDialogOpen(false)}
-                className="flex-1"
-              >
-                Cancel
-              </Button>
+            <div className="space-y-3">
+              <div>
+                <Label htmlFor="filename">Custom Filename</Label>
+                <Input
+                  id="filename"
+                  value={customFilename}
+                  onChange={(e) => setCustomFilename(e.target.value)}
+                  placeholder="Enter filename (without .json extension)"
+                  className="mt-1"
+                />
+              </div>
+              <div className="flex space-x-3">
+                <Button 
+                  onClick={handleExportData}
+                  className="flex-1 btn-primary-glass"
+                >
+                  <Download className="w-4 h-4 mr-2" />
+                  Export Data
+                </Button>
+                <Button 
+                  variant="outline" 
+                  onClick={() => {
+                    setIsExportDialogOpen(false);
+                    setCustomFilename('');
+                  }}
+                  className="flex-1"
+                >
+                  Cancel
+                </Button>
+              </div>
             </div>
           </div>
         </DialogContent>
@@ -353,6 +394,16 @@ const Settings: React.FC = () => {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Previous Data Analytics Modal */}
+      {showPreviousAnalytics && (
+        <div className="fixed inset-0 z-50 bg-background">
+          <PreviousDataAnalytics 
+            onClose={() => setShowPreviousAnalytics(false)}
+            currentTransactions={transactions}
+          />
+        </div>
+      )}
     </div>
   );
 };
