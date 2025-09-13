@@ -11,9 +11,22 @@ const Analytics: React.FC = () => {
   const totalExpense = getTotalExpense();
   const categoryTotals = getCategoryTotals();
 
-  // Prepare data for charts
+  // Prepare data for charts - only expense categories
   const categoryData = useMemo(() => {
-    return Object.entries(categoryTotals)
+    // Filter transactions to only include expenses
+    const expenseTransactions = transactions.filter(t => t.type === 'expense');
+    
+    // Create category totals for expenses only
+    const expenseCategoryTotals: Record<string, { total: number; count: number }> = {};
+    expenseTransactions.forEach(transaction => {
+      if (!expenseCategoryTotals[transaction.category]) {
+        expenseCategoryTotals[transaction.category] = { total: 0, count: 0 };
+      }
+      expenseCategoryTotals[transaction.category].total += transaction.amount;
+      expenseCategoryTotals[transaction.category].count += 1;
+    });
+
+    return Object.entries(expenseCategoryTotals)
       .map(([categoryName, data]) => {
         const category = getCategoryById(
           Object.values(getCategoryById).find(cat => cat?.name === categoryName)?.id || ''
@@ -28,7 +41,7 @@ const Analytics: React.FC = () => {
       })
       .sort((a, b) => b.value - a.value)
       .slice(0, 8); // Top 8 categories
-  }, [categoryTotals]);
+  }, [transactions]);
 
   // Monthly spending data
   const monthlyData = useMemo(() => {
@@ -176,11 +189,12 @@ const Analytics: React.FC = () => {
                         </Pie>
                         <Tooltip 
                           formatter={(value: number) => [formatCurrency(value), 'Amount']}
-                          labelStyle={{ color: '#fff' }}
+                          labelStyle={{ color: 'hsl(var(--foreground))' }}
                           contentStyle={{ 
                             backgroundColor: 'hsl(var(--card))', 
                             border: '1px solid hsl(var(--border))',
-                            borderRadius: '8px'
+                            borderRadius: '8px',
+                            color: 'hsl(var(--foreground))'
                           }}
                         />
                       </PieChart>
@@ -231,11 +245,12 @@ const Analytics: React.FC = () => {
                           formatCurrency(value), 
                           name === 'income' ? 'Income' : name === 'expense' ? 'Expense' : 'Net'
                         ]}
-                        labelStyle={{ color: '#fff' }}
+                        labelStyle={{ color: 'hsl(var(--foreground))' }}
                         contentStyle={{ 
                           backgroundColor: 'hsl(var(--card))', 
                           border: '1px solid hsl(var(--border))',
-                          borderRadius: '8px'
+                          borderRadius: '8px',
+                          color: 'hsl(var(--foreground))'
                         }}
                       />
                       <Bar dataKey="income" fill="hsl(var(--income))" radius={[4, 4, 0, 0]} />
