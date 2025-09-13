@@ -190,20 +190,24 @@ const Analytics: React.FC = () => {
                         <Tooltip 
                           formatter={(value: number) => [formatCurrency(value), 'Amount']}
                           labelStyle={{ 
-                            color: 'hsl(var(--foreground))',
-                            fontWeight: 'bold'
-                          }}
-                          contentStyle={{ 
-                            backgroundColor: 'hsl(var(--popover))', 
-                            border: '1px solid hsl(var(--border))',
-                            borderRadius: '8px',
-                            color: 'hsl(var(--popover-foreground))',
-                            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)'
-                          }}
-                          itemStyle={{
-                            color: 'hsl(var(--popover-foreground))',
+                            color: '#ffffff',
+                            fontWeight: 'bold',
                             fontSize: '14px'
                           }}
+                          contentStyle={{ 
+                            backgroundColor: '#1f2937', 
+                            border: '1px solid #374151',
+                            borderRadius: '8px',
+                            color: '#ffffff',
+                            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)',
+                            fontSize: '14px'
+                          }}
+                          itemStyle={{
+                            color: '#ffffff',
+                            fontSize: '14px',
+                            fontWeight: '500'
+                          }}
+                          cursor={{ fill: 'transparent' }}
                         />
                       </PieChart>
                     </ResponsiveContainer>
@@ -254,20 +258,24 @@ const Analytics: React.FC = () => {
                           name === 'income' ? 'Income' : name === 'expense' ? 'Expense' : 'Net'
                         ]}
                         labelStyle={{ 
-                          color: 'hsl(var(--foreground))',
-                          fontWeight: 'bold'
-                        }}
-                        contentStyle={{ 
-                          backgroundColor: 'hsl(var(--popover))', 
-                          border: '1px solid hsl(var(--border))',
-                          borderRadius: '8px',
-                          color: 'hsl(var(--popover-foreground))',
-                          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)'
-                        }}
-                        itemStyle={{
-                          color: 'hsl(var(--popover-foreground))',
+                          color: '#ffffff',
+                          fontWeight: 'bold',
                           fontSize: '14px'
                         }}
+                        contentStyle={{ 
+                          backgroundColor: '#1f2937', 
+                          border: '1px solid #374151',
+                          borderRadius: '8px',
+                          color: '#ffffff',
+                          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)',
+                          fontSize: '14px'
+                        }}
+                        itemStyle={{
+                          color: '#ffffff',
+                          fontSize: '14px',
+                          fontWeight: '500'
+                        }}
+                        cursor={{ fill: 'transparent' }}
                       />
                       <Bar dataKey="income" fill="hsl(var(--income))" radius={[4, 4, 0, 0]} />
                       <Bar dataKey="expense" fill="hsl(var(--expense))" radius={[4, 4, 0, 0]} />
