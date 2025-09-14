@@ -193,12 +193,22 @@ const CategoriesView: React.FC<CategoriesViewProps> = ({ onClose }) => {
                       setNewCategory(prev => ({ ...prev, type: value }))
                     }
                   >
-                    <SelectTrigger className="w-full">
-                      <SelectValue />
+                    <SelectTrigger className="w-full glass-card border-card-border bg-background/50">
+                      <SelectValue placeholder="Select category type" />
                     </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="expense">💸 Expense</SelectItem>
-                      <SelectItem value="income">💰 Income</SelectItem>
+                    <SelectContent className="glass-card border-card-border bg-background/95 backdrop-blur-md">
+                      <SelectItem value="expense" className="hover:bg-expense/10 focus:bg-expense/10">
+                        <div className="flex items-center gap-2">
+                          <TrendingDown className="w-4 h-4 text-expense" />
+                          <span>Expense</span>
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="income" className="hover:bg-income/10 focus:bg-income/10">
+                        <div className="flex items-center gap-2">
+                          <TrendingUp className="w-4 h-4 text-income" />
+                          <span>Income</span>
+                        </div>
+                      </SelectItem>
                     </SelectContent>
                   </Select>
                 </div>

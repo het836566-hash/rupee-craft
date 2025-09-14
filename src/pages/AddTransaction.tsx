@@ -1,17 +1,16 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useExpense } from '@/contexts/ExpenseContext';
-import { getCategoriesByType, defaultCategories } from '@/constants/categories';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { ArrowLeft, Plus, TrendingUp, TrendingDown } from 'lucide-react';
+import { ArrowLeft, Plus, TrendingUp, TrendingDown, ChevronDown, ChevronUp } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 
 const AddTransaction: React.FC = () => {
   const navigate = useNavigate();
-  const { addTransaction } = useExpense();
+  const { addTransaction, getAllCategories } = useExpense();
   const { toast } = useToast();
   
   const [type, setType] = useState<'income' | 'expense'>('expense');
@@ -19,8 +18,22 @@ const AddTransaction: React.FC = () => {
   const [category, setCategory] = useState('');
   const [note, setNote] = useState('');
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
+  const [showAllCategories, setShowAllCategories] = useState(false);
 
-  const categories = getCategoriesByType(type);
+  const allCategories = getAllCategories();
+  
+  const categories = useMemo(() => {
+    return allCategories.filter(cat => cat.type === type || cat.type === 'both');
+  }, [allCategories, type]);
+
+  const displayedCategories = useMemo(() => {
+    if (showAllCategories || categories.length <= 5) {
+      return categories;
+    }
+    return categories.slice(0, 5);
+  }, [categories, showAllCategories]);
+
+  const hasMoreCategories = categories.length > 5;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -145,24 +158,51 @@ const AddTransaction: React.FC = () => {
           {/* Category */}
           <div className="space-y-3">
             <label className="text-sm font-medium">Category</label>
-            <div className="grid grid-cols-2 gap-3 max-h-64 overflow-y-auto">
-              {categories.map((cat) => (
+            <div className="space-y-3">
+              <div className="grid grid-cols-2 gap-3">
+                {displayedCategories.map((cat) => (
+                  <button
+                    key={cat.id}
+                    type="button"
+                    onClick={() => setCategory(cat.name)}
+                    className={cn(
+                      "flex items-center p-3 rounded-lg transition-all duration-200",
+                      "glass-card border text-left",
+                      category === cat.name
+                        ? "border-primary bg-primary/10"
+                        : "border-card-border hover:border-primary/50"
+                    )}
+                  >
+                    <span className="text-lg mr-3">{cat.icon}</span>
+                    <span className="text-sm font-medium truncate">{cat.name}</span>
+                  </button>
+                ))}
+              </div>
+              
+              {/* More Categories Button */}
+              {hasMoreCategories && (
                 <button
-                  key={cat.id}
                   type="button"
-                  onClick={() => setCategory(cat.name)}
+                  onClick={() => setShowAllCategories(!showAllCategories)}
                   className={cn(
-                    "flex items-center p-3 rounded-lg transition-all duration-200",
-                    "glass-card border text-left",
-                    category === cat.name
-                      ? "border-primary bg-primary/10"
-                      : "border-card-border hover:border-primary/50"
+                    "w-full flex items-center justify-center p-3 rounded-lg transition-all duration-200",
+                    "glass-card border border-card-border hover:border-primary/50",
+                    "text-sm font-medium text-muted-foreground hover:text-primary"
                   )}
                 >
-                  <span className="text-lg mr-3">{cat.icon}</span>
-                  <span className="text-sm font-medium truncate">{cat.name}</span>
+                  {showAllCategories ? (
+                    <>
+                      <ChevronUp className="w-4 h-4 mr-2" />
+                      Show Less Categories
+                    </>
+                  ) : (
+                    <>
+                      <ChevronDown className="w-4 h-4 mr-2" />
+                      Show {categories.length - 5} More Categories
+                    </>
+                  )}
                 </button>
-              ))}
+              )}
             </div>
           </div>
 
