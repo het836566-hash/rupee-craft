@@ -4,6 +4,9 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { 
   X, 
   Search, 
@@ -12,19 +15,29 @@ import {
   TrendingDown, 
   Grid3X3,
   Package,
-  DollarSign
+  DollarSign,
+  Plus
 } from 'lucide-react';
-import { defaultCategories } from '@/constants/categories';
 import { cn } from '@/lib/utils';
+import { useToast } from '@/hooks/use-toast';
+import { Category } from '@/types/expense';
 
 interface CategoriesViewProps {
   onClose: () => void;
 }
 
 const CategoriesView: React.FC<CategoriesViewProps> = ({ onClose }) => {
-  const { transactions, getCategoryTotals } = useExpense();
+  const { transactions, getCategoryTotals, getAllCategories, addCustomCategory } = useExpense();
+  const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState('');
   const [filterType, setFilterType] = useState<'all' | 'income' | 'expense'>('all');
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [newCategory, setNewCategory] = useState({
+    name: '',
+    icon: '📝',
+    color: '#4ECDC4',
+    type: 'expense' as 'income' | 'expense'
+  });
 
   const categoryTotals = getCategoryTotals();
 
@@ -37,7 +50,7 @@ const CategoriesView: React.FC<CategoriesViewProps> = ({ onClose }) => {
   };
 
   const filteredCategories = useMemo(() => {
-    let categories = defaultCategories.filter(category => {
+    let categories = getAllCategories().filter(category => {
       const matchesSearch = category.name.toLowerCase().includes(searchQuery.toLowerCase());
       const matchesType = filterType === 'all' || 
         category.type === filterType || 
@@ -60,7 +73,7 @@ const CategoriesView: React.FC<CategoriesViewProps> = ({ onClose }) => {
   }, [searchQuery, filterType, categoryTotals]);
 
   const getUsageStats = () => {
-    const totalCategories = defaultCategories.length;
+    const totalCategories = getAllCategories().length;
     const usedCategories = Object.keys(categoryTotals).length;
     const totalTransactions = transactions.length;
     
@@ -72,10 +85,62 @@ const CategoriesView: React.FC<CategoriesViewProps> = ({ onClose }) => {
     };
   };
 
+  const handleAddCategory = () => {
+    if (!newCategory.name.trim()) {
+      toast({
+        title: "Error",
+        description: "Category name is required",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // Check if category name already exists
+    const existingCategory = getAllCategories().find(
+      cat => cat.name.toLowerCase() === newCategory.name.toLowerCase()
+    );
+    
+    if (existingCategory) {
+      toast({
+        title: "Error",
+        description: "A category with this name already exists",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    try {
+      addCustomCategory(newCategory);
+      toast({
+        title: "Success",
+        description: `Category "${newCategory.name}" has been added successfully`
+      });
+      
+      // Reset form
+      setNewCategory({
+        name: '',
+        icon: '📝',
+        color: '#4ECDC4',
+        type: 'expense'
+      });
+      setIsAddDialogOpen(false);
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to add category. Please try again.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const predefinedIcons = ['📝', '💼', '🏠', '🚗', '🍽️', '🛒', '🎬', '💡', '🏥', '📚', '✈️', '💄', '🎁', '💰', '📈', '🏢'];
+  const predefinedColors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FECA57', '#FF9FF3', '#54A0FF', '#5F27CD', '#00D2D3', '#26de81', '#2bcbba', '#0fb9b1', '#20bf6b'];
+
   const stats = getUsageStats();
 
   return (
-    <div className="min-h-screen bg-background p-2 sm:p-4">
+    <div className="fixed inset-0 z-50 bg-background overflow-y-auto">
+      <div className="min-h-full p-2 sm:p-4">
       {/* Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 sm:mb-6 gap-4">
         <div>
@@ -87,10 +152,178 @@ const CategoriesView: React.FC<CategoriesViewProps> = ({ onClose }) => {
             Manage and organize your transaction categories
           </p>
         </div>
-        <Button onClick={onClose} variant="outline" size="sm" className="w-full sm:w-auto">
-          <X className="w-4 h-4 mr-2" />
-          Close
-        </Button>
+        <div className="flex gap-2 w-full sm:w-auto">
+          <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+            <DialogTrigger asChild>
+              <Button variant="default" size="sm" className="flex-1 sm:flex-none">
+                <Plus className="w-4 h-4 mr-2" />
+                Add Category
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle>Add New Category</DialogTitle>
+                <DialogDescription>
+                  Create a custom category for your transactions
+                </DialogDescription>
+              </DialogHeader>
+              <div className="space-y-6 py-4">
+                {/* Category Name */}
+                <div className="space-y-2">
+                  <Label htmlFor="name" className="text-sm font-medium">
+                    Category Name
+                  </Label>
+                  <Input
+                    id="name"
+                    value={newCategory.name}
+                    onChange={(e) => setNewCategory(prev => ({ ...prev, name: e.target.value }))}
+                    placeholder="Enter category name"
+                    className="w-full"
+                  />
+                </div>
+
+                {/* Category Type */}
+                <div className="space-y-2">
+                  <Label htmlFor="type" className="text-sm font-medium">
+                    Category Type
+                  </Label>
+                  <Select
+                    value={newCategory.type}
+                    onValueChange={(value: 'income' | 'expense') => 
+                      setNewCategory(prev => ({ ...prev, type: value }))
+                    }
+                  >
+                    <SelectTrigger className="w-full">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="expense">💸 Expense</SelectItem>
+                      <SelectItem value="income">💰 Income</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Icon Selection */}
+                <div className="space-y-3">
+                  <Label className="text-sm font-medium">
+                    Choose Icon
+                  </Label>
+                  <div className="space-y-3">
+                    {/* Selected Icon Preview */}
+                    <div className="flex items-center gap-3 p-3 border rounded-lg bg-muted/30">
+                      <div 
+                        className="w-12 h-12 rounded-full flex items-center justify-center text-2xl border-2"
+                        style={{ backgroundColor: `${newCategory.color}20`, borderColor: newCategory.color }}
+                      >
+                        {newCategory.icon}
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium">Selected Icon</p>
+                        <p className="text-xs text-muted-foreground">Preview of your category</p>
+                      </div>
+                    </div>
+                    
+                    {/* Icon Grid */}
+                    <div className="grid grid-cols-8 gap-2">
+                      {predefinedIcons.map((icon) => (
+                        <button
+                          key={icon}
+                          type="button"
+                          onClick={() => setNewCategory(prev => ({ ...prev, icon }))}
+                          className={cn(
+                            "w-10 h-10 rounded-lg border-2 flex items-center justify-center text-xl hover:bg-muted transition-all",
+                            newCategory.icon === icon ? "border-primary bg-primary/10" : "border-muted hover:border-primary/50"
+                          )}
+                        >
+                          {icon}
+                        </button>
+                      ))}
+                    </div>
+                    
+                    {/* Custom Icon Input */}
+                    <div className="space-y-2">
+                      <Label className="text-xs text-muted-foreground">Or enter custom emoji</Label>
+                      <Input
+                        value={newCategory.icon}
+                        onChange={(e) => setNewCategory(prev => ({ ...prev, icon: e.target.value }))}
+                        placeholder="🎯"
+                        className="text-center text-xl h-12"
+                        maxLength={2}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Color Selection */}
+                <div className="space-y-3">
+                  <Label className="text-sm font-medium">
+                    Choose Color
+                  </Label>
+                  <div className="space-y-3">
+                    {/* Color Grid */}
+                    <div className="grid grid-cols-6 gap-3">
+                      {predefinedColors.map((color) => (
+                        <button
+                          key={color}
+                          type="button"
+                          onClick={() => setNewCategory(prev => ({ ...prev, color }))}
+                          className={cn(
+                            "w-12 h-12 rounded-lg border-4 transition-all hover:scale-110",
+                            newCategory.color === color ? "border-white shadow-lg scale-110" : "border-transparent hover:border-white/50"
+                          )}
+                          style={{ backgroundColor: color }}
+                        />
+                      ))}
+                    </div>
+                    
+                    {/* Custom Color Picker */}
+                    <div className="space-y-2">
+                      <Label className="text-xs text-muted-foreground">Or pick custom color</Label>
+                      <div className="flex gap-2">
+                        <Input
+                          type="color"
+                          value={newCategory.color}
+                          onChange={(e) => setNewCategory(prev => ({ ...prev, color: e.target.value }))}
+                          className="w-16 h-12 p-1 border-2"
+                        />
+                        <Input
+                          type="text"
+                          value={newCategory.color}
+                          onChange={(e) => setNewCategory(prev => ({ ...prev, color: e.target.value }))}
+                          placeholder="#4ECDC4"
+                          className="flex-1 font-mono"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <DialogFooter className="flex gap-3 pt-6">
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  onClick={() => setIsAddDialogOpen(false)}
+                  className="flex-1"
+                >
+                  Cancel
+                </Button>
+                <Button 
+                  type="button" 
+                  onClick={handleAddCategory}
+                  className="flex-1 bg-primary hover:bg-primary/90"
+                  disabled={!newCategory.name.trim()}
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add Category
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+          <Button onClick={onClose} variant="outline" size="sm">
+            <X className="w-4 h-4 mr-2" />
+            Close
+          </Button>
+        </div>
       </div>
 
       {/* Stats Overview */}
@@ -243,6 +476,7 @@ const CategoriesView: React.FC<CategoriesViewProps> = ({ onClose }) => {
           </CardContent>
         </Card>
       )}
+      </div>
     </div>
   );
 };
