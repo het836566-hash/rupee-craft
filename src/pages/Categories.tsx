@@ -3,11 +3,12 @@ import { useExpense } from '@/contexts/ExpenseContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Plus, TrendingUp, TrendingDown, Edit, BarChart3 } from 'lucide-react';
+import { Plus, TrendingUp, TrendingDown, Edit, BarChart3, Trash2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { defaultCategories } from '@/constants/categories';
 
 const Categories: React.FC = () => {
-  const { getCategoryTotals, getAllCategories, addCustomCategory } = useExpense();
+  const { getCategoryTotals, getAllCategories, addCustomCategory, deleteCustomCategory } = useExpense();
   const [selectedType, setSelectedType] = useState<'all' | 'income' | 'expense'>('all');
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState('');
@@ -34,6 +35,21 @@ const Categories: React.FC = () => {
 
   const getCategoryUsage = (categoryName: string) => {
     return categoryTotals[categoryName] || { total: 0, count: 0 };
+  };
+
+  const isCustomCategory = (categoryId: string) => {
+    // Predefined categories have numeric IDs, custom categories have generated IDs
+    return !defaultCategories.some(cat => cat.id === categoryId);
+  };
+
+  const handleDeleteCategory = (categoryId: string, categoryName: string) => {
+    const usage = getCategoryUsage(categoryName);
+    if (usage.count > 0) {
+      if (!confirm(`This category "${categoryName}" has ${usage.count} transactions. Deleting it will not affect existing transactions, but the category won't be available for new transactions. Are you sure?`)) {
+        return;
+      }
+    }
+    deleteCustomCategory(categoryId);
   };
 
   const handleAddCategory = () => {
@@ -160,17 +176,34 @@ const Categories: React.FC = () => {
                       <h3 className="font-semibold text-foreground">{category.name}</h3>
                       <p className="text-xs text-muted-foreground capitalize">
                         {category.type}
+                        {isCustomCategory(category.id) && (
+                          <span className="ml-1 text-primary">• Custom</span>
+                        )}
                       </p>
                     </div>
                   </div>
 
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    className="w-8 h-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
-                  >
-                    <Edit className="w-4 h-4" />
-                  </Button>
+                  <div className="flex items-center space-x-1">
+                    {isCustomCategory(category.id) && (
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => handleDeleteCategory(category.id, category.name)}
+                        className="w-8 h-8 p-0 text-destructive hover:text-destructive hover:bg-destructive/10 transition-all"
+                        title="Delete custom category"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    )}
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="w-8 h-8 p-0 opacity-60 hover:opacity-100 transition-opacity"
+                      title="Edit category"
+                    >
+                      <Edit className="w-4 h-4" />
+                    </Button>
+                  </div>
                 </div>
 
                 {isUsed ? (
