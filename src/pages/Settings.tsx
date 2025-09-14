@@ -15,11 +15,14 @@ import {
   Shield,
   Palette,
   Moon,
-  BarChart3
+  BarChart3,
+  Grid3X3,
+  Tag
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import PreviousDataAnalytics from '@/components/PreviousDataAnalytics';
+import CategoriesView from '@/components/CategoriesView';
 
 const Settings: React.FC = () => {
   const { transactions } = useExpense();
@@ -32,6 +35,7 @@ const Settings: React.FC = () => {
   const [isImportWarningOpen, setIsImportWarningOpen] = useState(false);
   const [pendingImportFile, setPendingImportFile] = useState<File | null>(null);
   const [importValidationError, setImportValidationError] = useState<string | null>(null);
+  const [showCategories, setShowCategories] = useState(false);
 
   const handleExportData = () => {
     if (!customFilename.trim()) {
@@ -210,6 +214,12 @@ const Settings: React.FC = () => {
           description: 'Analyze uploaded JSON files with detailed charts',
           icon: BarChart3,
           action: () => setShowPreviousAnalytics(true),
+        },
+        {
+          title: 'Manage Categories',
+          description: 'View and organize transaction categories',
+          icon: Grid3X3,
+          action: () => setShowCategories(true),
         },
         {
           title: 'Clear All Data',
@@ -493,6 +503,13 @@ const Settings: React.FC = () => {
             onClose={() => setShowPreviousAnalytics(false)}
             currentTransactions={transactions}
           />
+        </div>
+      )}
+
+      {/* Categories Modal */}
+      {showCategories && (
+        <div className="fixed inset-0 z-50 bg-background">
+          <CategoriesView onClose={() => setShowCategories(false)} />
         </div>
       )}
     </div>

@@ -9,7 +9,6 @@ import Layout from "@/components/Layout";
 import Home from "@/pages/Home";
 import AddTransaction from "@/pages/AddTransaction";
 import Analytics from "@/pages/Analytics";
-import Categories from "@/pages/Categories";
 import Friends from "@/pages/Friends";
 import Settings from "@/pages/Settings";
 import NotFound from "./pages/NotFound";
@@ -26,12 +25,11 @@ const App = () => (
           <BrowserRouter>
             <Routes>
               <Route path="/" element={<Layout />}>
-                <Route index element={<Home />} />
-                <Route path="add" element={<AddTransaction />} />
-                <Route path="analytics" element={<Analytics />} />
-                <Route path="categories" element={<Categories />} />
-                <Route path="friends" element={<Friends />} />
-                <Route path="settings" element={<Settings />} />
+              <Route index element={<Home />} />
+              <Route path="add" element={<AddTransaction />} />
+              <Route path="analytics" element={<Analytics />} />
+              <Route path="friends" element={<Friends />} />
+              <Route path="settings" element={<Settings />} />
               </Route>
               <Route path="*" element={<NotFound />} />
             </Routes>
