@@ -7,11 +7,18 @@ import { Label } from '@/components/ui/label';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { User } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { cn } from '@/lib/utils';
 
 interface AddFriendDialogProps {
   open: boolean;
   onClose: () => void;
 }
+
+// Predefined avatar options
+const AVATAR_OPTIONS = [
+  { id: 'boy', label: 'Boy', emoji: '👦' },
+  { id: 'girl', label: 'Girl', emoji: '👧' }
+];
 
 const AddFriendDialog: React.FC<AddFriendDialogProps> = ({ open, onClose }) => {
   const { addFriend } = useFriends();
@@ -19,7 +26,7 @@ const AddFriendDialog: React.FC<AddFriendDialogProps> = ({ open, onClose }) => {
   const [formData, setFormData] = useState({
     name: '',
     phone: '',
-    avatar: ''
+    avatar: 'boy' // Default to boy
   });
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -35,10 +42,11 @@ const AddFriendDialog: React.FC<AddFriendDialogProps> = ({ open, onClose }) => {
     }
 
     try {
+      const selectedAvatar = AVATAR_OPTIONS.find(option => option.id === formData.avatar);
       addFriend({
         name: formData.name.trim(),
         phone: formData.phone.trim() || undefined,
-        avatar: formData.avatar.trim() || undefined,
+        avatar: selectedAvatar?.emoji || '👦',
       });
 
       toast({
@@ -47,7 +55,7 @@ const AddFriendDialog: React.FC<AddFriendDialogProps> = ({ open, onClose }) => {
       });
 
       // Reset form and close dialog
-      setFormData({ name: '', phone: '', avatar: '' });
+      setFormData({ name: '', phone: '', avatar: 'boy' });
       onClose();
     } catch (error) {
       toast({
@@ -59,7 +67,7 @@ const AddFriendDialog: React.FC<AddFriendDialogProps> = ({ open, onClose }) => {
   };
 
   const handleCancel = () => {
-    setFormData({ name: '', phone: '', avatar: '' });
+    setFormData({ name: '', phone: '', avatar: 'boy' });
     onClose();
   };
 
@@ -73,12 +81,9 @@ const AddFriendDialog: React.FC<AddFriendDialogProps> = ({ open, onClose }) => {
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Avatar Preview */}
           <div className="flex justify-center">
-            <Avatar className="w-20 h-20">
-              <AvatarImage src={formData.avatar} />
-              <AvatarFallback className="bg-primary/20">
-                {formData.name ? formData.name.charAt(0).toUpperCase() : <User className="w-8 h-8" />}
-              </AvatarFallback>
-            </Avatar>
+            <div className="w-20 h-20 rounded-full bg-primary/20 flex items-center justify-center text-4xl">
+              {AVATAR_OPTIONS.find(option => option.id === formData.avatar)?.emoji || '👦'}
+            </div>
           </div>
 
           {/* Form Fields */}
@@ -108,15 +113,28 @@ const AddFriendDialog: React.FC<AddFriendDialogProps> = ({ open, onClose }) => {
             </div>
 
             <div>
-              <Label htmlFor="friend-avatar">Avatar URL (Optional)</Label>
-              <Input
-                id="friend-avatar"
-                type="url"
-                value={formData.avatar}
-                onChange={(e) => setFormData({ ...formData, avatar: e.target.value })}
-                placeholder="Enter avatar image URL"
-                className="mt-1"
-              />
+              <Label>Choose Avatar</Label>
+              <div className="grid grid-cols-2 gap-3 mt-2">
+                {AVATAR_OPTIONS.map((option) => (
+                  <button
+                    key={option.id}
+                    type="button"
+                    onClick={() => setFormData({ ...formData, avatar: option.id })}
+                    className={cn(
+                      "flex items-center justify-center p-4 rounded-lg border transition-all duration-200",
+                      "glass-card hover:border-primary/50",
+                      formData.avatar === option.id
+                        ? "border-primary bg-primary/10"
+                        : "border-card-border"
+                    )}
+                  >
+                    <div className="text-center">
+                      <div className="text-3xl mb-2">{option.emoji}</div>
+                      <div className="text-sm font-medium">{option.label}</div>
+                    </div>
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
 

@@ -193,12 +193,36 @@ const CategoriesView: React.FC<CategoriesViewProps> = ({ onClose }) => {
                       setNewCategory(prev => ({ ...prev, type: value }))
                     }
                   >
-                    <SelectTrigger className="w-full">
-                      <SelectValue />
+                    <SelectTrigger className="w-full glass-card border-card-border bg-background/50 text-foreground">
+                      <SelectValue placeholder="Select category type">
+                        <div className="flex items-center gap-2">
+                          {newCategory.type === 'expense' ? (
+                            <>
+                              <TrendingDown className="w-4 h-4 text-expense" />
+                              <span className="text-foreground font-medium">Expense</span>
+                            </>
+                          ) : (
+                            <>
+                              <TrendingUp className="w-4 h-4 text-income" />
+                              <span className="text-foreground font-medium">Income</span>
+                            </>
+                          )}
+                        </div>
+                      </SelectValue>
                     </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="expense">💸 Expense</SelectItem>
-                      <SelectItem value="income">💰 Income</SelectItem>
+                    <SelectContent className="glass-card border-card-border bg-background/95 backdrop-blur-md">
+                      <SelectItem value="expense" className="hover:bg-expense/10 focus:bg-expense/10 cursor-pointer">
+                        <div className="flex items-center gap-2">
+                          <TrendingDown className="w-4 h-4 text-expense" />
+                          <span className="text-foreground">Expense</span>
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="income" className="hover:bg-income/10 focus:bg-income/10 cursor-pointer">
+                        <div className="flex items-center gap-2">
+                          <TrendingUp className="w-4 h-4 text-income" />
+                          <span className="text-foreground">Income</span>
+                        </div>
+                      </SelectItem>
                     </SelectContent>
                   </Select>
                 </div>

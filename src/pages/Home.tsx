@@ -4,20 +4,29 @@ import BalanceSummary from '@/components/BalanceSummary';
 import TransactionList from '@/components/TransactionList';
 import SearchBar from '@/components/SearchBar';
 import DateFilter from '@/components/DateFilter';
+import CategoryFilter from '@/components/CategoryFilter';
 import { DateFilter as DateFilterType } from '@/types/expense';
 
 const Home: React.FC = () => {
   const { transactions, searchTransactions, filterTransactionsByDate } = useExpense();
   const [searchQuery, setSearchQuery] = useState('');
   const [dateFilter, setDateFilter] = useState<DateFilterType>({ type: 'all' });
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
-  // Filter transactions based on search and date
+  // Filter transactions based on search, date, and category
   const filteredTransactions = useMemo(() => {
     let filtered = transactions;
 
     // Apply date filter
     if (dateFilter.type !== 'all') {
       filtered = filterTransactionsByDate(dateFilter.startDate, dateFilter.endDate);
+    }
+
+    // Apply category filter
+    if (selectedCategory) {
+      filtered = filtered.filter(transaction => 
+        transaction.category === selectedCategory
+      );
     }
 
     // Apply search filter
@@ -30,7 +39,7 @@ const Home: React.FC = () => {
     }
 
     return filtered;
-  }, [transactions, searchQuery, dateFilter, filterTransactionsByDate]);
+  }, [transactions, searchQuery, dateFilter, selectedCategory, filterTransactionsByDate]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -59,7 +68,11 @@ const Home: React.FC = () => {
               placeholder="Search by category, note, or amount..."
             />
           </div>
-          <div>
+          <div className="flex flex-col sm:flex-row gap-2">
+            <CategoryFilter
+              selectedCategory={selectedCategory}
+              onCategoryChange={setSelectedCategory}
+            />
             <DateFilter
               currentFilter={dateFilter}
               onFilterChange={setDateFilter}
@@ -70,7 +83,12 @@ const Home: React.FC = () => {
         {/* Results Info */}
         <div className="flex items-center justify-between">
           <h3 className="text-lg font-semibold">
-            {searchQuery || dateFilter.type !== 'all' ? 'Filtered ' : ''}Transactions
+            {searchQuery || dateFilter.type !== 'all' || selectedCategory ? 'Filtered ' : ''}Transactions
+            {selectedCategory && (
+              <span className="text-sm font-normal text-muted-foreground ml-2">
+                in {selectedCategory}
+              </span>
+            )}
           </h3>
           <span className="text-sm text-muted-foreground">
             {filteredTransactions.length} transaction{filteredTransactions.length !== 1 ? 's' : ''}

@@ -9,7 +9,13 @@ export default defineConfig(({ mode }) => ({
     host: "0.0.0.0",
     port: 12000,
     strictPort: true,
-    allowedHosts: ["work-1-riiwbvscuslmjwgg.prod-runtime.all-hands.dev", "work-2-riiwbvscuslmjwgg.prod-runtime.all-hands.dev"],
+    allowedHosts: "all",
+    cors: true,
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+    },
   },
   plugins: [react(), mode === "development" && componentTagger()].filter(Boolean),
   resolve: {
