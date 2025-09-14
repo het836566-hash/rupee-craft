@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { defaultCategories, getCategoriesByType } from '@/constants/categories';
 import { useExpense } from '@/contexts/ExpenseContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -8,7 +7,7 @@ import { Plus, TrendingUp, TrendingDown, Edit, BarChart3 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const Categories: React.FC = () => {
-  const { getCategoryTotals } = useExpense();
+  const { getCategoryTotals, getAllCategories, addCustomCategory } = useExpense();
   const [selectedType, setSelectedType] = useState<'all' | 'income' | 'expense'>('all');
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState('');
@@ -17,9 +16,9 @@ const Categories: React.FC = () => {
   const categoryTotals = getCategoryTotals();
 
   const getFilteredCategories = () => {
-    let categories = defaultCategories;
+    let categories = getAllCategories();
     if (selectedType !== 'all') {
-      categories = getCategoriesByType(selectedType);
+      categories = categories.filter(cat => cat.type === selectedType || cat.type === 'both');
     }
     return categories;
   };
@@ -38,8 +37,16 @@ const Categories: React.FC = () => {
   };
 
   const handleAddCategory = () => {
-    // In a real app, this would add to a user's custom categories
-    console.log('Adding category:', { name: newCategoryName, icon: newCategoryIcon });
+    if (!newCategoryName.trim()) return;
+    
+    // Add the category using the context method
+    addCustomCategory({
+      name: newCategoryName.trim(),
+      icon: newCategoryIcon,
+      color: '#4ECDC4', // Default color
+      type: 'expense' // Default type
+    });
+    
     setIsAddDialogOpen(false);
     setNewCategoryName('');
     setNewCategoryIcon('💰');

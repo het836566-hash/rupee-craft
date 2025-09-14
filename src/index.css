@@ -177,4 +177,23 @@
   ::-webkit-scrollbar-thumb:hover {
     background: hsl(175 100% 42%);
   }
+
+  /* Prevent dialog sliding */
+  [data-radix-dialog-content] {
+    touch-action: manipulation !important;
+    -webkit-user-drag: none !important;
+    -webkit-touch-callout: none !important;
+    position: fixed !important;
+    left: 50% !important;
+    top: 50% !important;
+    transform: translate(-50%, -50%) !important;
+  }
+
+  /* Ensure form elements inside dialogs still work */
+  [data-radix-dialog-content] input,
+  [data-radix-dialog-content] textarea,
+  [data-radix-dialog-content] select,
+  [data-radix-dialog-content] button {
+    touch-action: manipulation !important;
+  }
 }
