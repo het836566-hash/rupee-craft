@@ -29,6 +29,9 @@ const Settings: React.FC = () => {
   const [isClearDialogOpen, setIsClearDialogOpen] = useState(false);
   const [showPreviousAnalytics, setShowPreviousAnalytics] = useState(false);
   const [customFilename, setCustomFilename] = useState('');
+  const [isImportWarningOpen, setIsImportWarningOpen] = useState(false);
+  const [pendingImportFile, setPendingImportFile] = useState<File | null>(null);
+  const [importValidationError, setImportValidationError] = useState<string | null>(null);
 
   const handleExportData = () => {
     if (!customFilename.trim()) {
@@ -77,52 +80,103 @@ const Settings: React.FC = () => {
     }
   };
 
+  const validateImportFile = (file: File): Promise<{ isValid: boolean; data?: any; error?: string }> => {
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const importedData = JSON.parse(e.target?.result as string);
+          
+          if (!importedData.transactions || !Array.isArray(importedData.transactions)) {
+            resolve({ isValid: false, error: 'Invalid file format - missing transactions array' });
+            return;
+          }
+
+          const validTransactions = importedData.transactions.filter((t: any) => 
+            t.id && t.type && t.amount && t.category && t.date
+          );
+
+          if (validTransactions.length === 0) {
+            resolve({ isValid: false, error: 'No valid transactions found in file' });
+            return;
+          }
+
+          const hasInvalidTransactions = importedData.transactions.length > validTransactions.length;
+          
+          resolve({ 
+            isValid: true, 
+            data: { ...importedData, validTransactions, hasInvalidTransactions }
+          });
+        } catch (error) {
+          resolve({ isValid: false, error: 'Invalid JSON format' });
+        }
+      };
+      reader.readAsText(file);
+    });
+  };
+
   const handleImportData = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      try {
-        const importedData = JSON.parse(e.target?.result as string);
-        
-        if (importedData.transactions && Array.isArray(importedData.transactions)) {
-          // Actually import the transactions into the app
-          const validTransactions = importedData.transactions.filter((t: any) => 
-            t.id && t.type && t.amount && t.category && t.date
-          );
-          
-          if (validTransactions.length > 0) {
-            // Save directly to localStorage to replace current data
-            localStorage.setItem('expense-tracker-transactions', JSON.stringify(validTransactions));
-            
-            toast({
-              title: "Import successful",
-              description: `Imported ${validTransactions.length} transactions. Refreshing app...`,
-            });
-            
-            // Reload the page to reflect the imported data
-            setTimeout(() => {
-              window.location.reload();
-            }, 1500);
-          } else {
-            throw new Error('No valid transactions found in file');
-          }
-        } else {
-          throw new Error('Invalid data format');
-        }
-      } catch (error) {
-        console.error('Import error:', error);
-        toast({
-          title: "Import failed",
-          description: "The file format is invalid or corrupted.",
-          variant: "destructive"
-        });
-      }
-    };
-
-    reader.readAsText(file);
+    setPendingImportFile(file);
+    
+    if (transactions.length > 0) {
+      // Show warning dialog if there's existing data
+      setIsImportWarningOpen(true);
+    } else {
+      // Proceed directly if no existing data
+      processImportFile(file);
+    }
+    
+    // Clear the input
+    event.target.value = '';
     setIsImportDialogOpen(false);
+  };
+
+  const processImportFile = async (file: File) => {
+    const validation = await validateImportFile(file);
+    
+    if (!validation.isValid) {
+      setImportValidationError(validation.error || 'Unknown validation error');
+      setIsImportWarningOpen(true);
+      return;
+    }
+
+    const { validTransactions, hasInvalidTransactions } = validation.data;
+
+    if (hasInvalidTransactions) {
+      setImportValidationError(`File contains some invalid transactions. Only ${validTransactions.length} valid transactions will be imported.`);
+      setIsImportWarningOpen(true);
+      return;
+    }
+
+    // Import the data
+    localStorage.setItem('expense-tracker-transactions', JSON.stringify(validTransactions));
+    
+    toast({
+      title: "Import successful",
+      description: `Imported ${validTransactions.length} transactions. Refreshing app...`,
+    });
+    
+    setTimeout(() => {
+      window.location.reload();
+    }, 1500);
+  };
+
+  const handleConfirmImport = () => {
+    if (pendingImportFile) {
+      processImportFile(pendingImportFile);
+    }
+    setIsImportWarningOpen(false);
+    setPendingImportFile(null);
+    setImportValidationError(null);
+  };
+
+  const handleCancelImport = () => {
+    setIsImportWarningOpen(false);
+    setPendingImportFile(null);
+    setImportValidationError(null);
   };
 
   const handleClearAllData = () => {
@@ -341,7 +395,7 @@ const Settings: React.FC = () => {
               <Info className="w-4 h-4" />
               <AlertDescription>
                 Select a JSON backup file to restore your transaction data. 
-                This will replace your current data.
+                {transactions.length > 0 && "This will replace your current data."}
               </AlertDescription>
             </Alert>
             <input
@@ -357,6 +411,43 @@ const Settings: React.FC = () => {
             >
               Cancel
             </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Import Warning Dialog */}
+      <Dialog open={isImportWarningOpen} onOpenChange={setIsImportWarningOpen}>
+        <DialogContent className="glass-card border-card-border">
+          <DialogHeader>
+            <DialogTitle>
+              {importValidationError ? "Import Warning" : "Replace Existing Data?"}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <Alert variant={importValidationError ? "destructive" : "default"}>
+              <Info className="w-4 h-4" />
+              <AlertDescription>
+                {importValidationError || 
+                  `You have ${transactions.length} existing transactions. Importing this file will permanently replace all your current data. This action cannot be undone.`
+                }
+              </AlertDescription>
+            </Alert>
+            <div className="flex space-x-3">
+              <Button 
+                onClick={handleConfirmImport}
+                variant={importValidationError ? "destructive" : "default"}
+                className="flex-1"
+              >
+                {importValidationError ? "Import Anyway" : "Yes, Replace Data"}
+              </Button>
+              <Button 
+                variant="outline" 
+                onClick={handleCancelImport}
+                className="flex-1"
+              >
+                Cancel
+              </Button>
+            </div>
           </div>
         </DialogContent>
       </Dialog>

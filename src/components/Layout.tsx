@@ -1,13 +1,13 @@
 import React from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { Home, Plus, TrendingUp, Grid3X3, Settings } from 'lucide-react';
+import { Home, Plus, TrendingUp, Grid3X3, Users, Settings } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const navItems = [
   { path: '/', icon: Home, label: 'Home' },
-  { path: '/add', icon: Plus, label: 'Add', isSpecial: true },
   { path: '/analytics', icon: TrendingUp, label: 'Analytics' },
-  { path: '/categories', icon: Grid3X3, label: 'Categories' },
+  { path: '/add', icon: Plus, label: 'Add', isSpecial: true },
+  { path: '/friends', icon: Users, label: 'Friends' },
   { path: '/settings', icon: Settings, label: 'Settings' },
 ];
 

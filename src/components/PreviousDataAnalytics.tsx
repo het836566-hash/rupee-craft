@@ -228,16 +228,16 @@ const PreviousDataAnalytics: React.FC<PreviousDataAnalyticsProps> = ({
   const activeFileData = uploadedFiles.find(f => f.id === activeTab);
 
   return (
-    <div className="min-h-screen bg-background p-4">
+    <div className="min-h-screen bg-background p-2 sm:p-4">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 sm:mb-6 gap-4">
         <div>
-          <h1 className="text-3xl font-bold">Previous Data Analytics</h1>
-          <p className="text-muted-foreground mt-1">
+          <h1 className="text-xl sm:text-3xl font-bold">Previous Data Analytics</h1>
+          <p className="text-muted-foreground mt-1 text-sm sm:text-base">
             Analyze historical transaction data with detailed insights
           </p>
         </div>
-        <div className="flex items-center gap-4">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 w-full sm:w-auto">
           <div className="flex items-center space-x-2">
             <Switch
               id="compare-mode"
@@ -245,9 +245,9 @@ const PreviousDataAnalytics: React.FC<PreviousDataAnalyticsProps> = ({
               onCheckedChange={setCompareMode}
               disabled={uploadedFiles.length === 0}
             />
-            <Label htmlFor="compare-mode">Compare with current data</Label>
+            <Label htmlFor="compare-mode" className="text-sm">Compare with current data</Label>
           </div>
-          <Button onClick={onClose} variant="outline" size="sm">
+          <Button onClick={onClose} variant="outline" size="sm" className="w-full sm:w-auto">
             <X className="w-4 h-4 mr-2" />
             Close
           </Button>
@@ -324,7 +324,7 @@ const PreviousDataAnalytics: React.FC<PreviousDataAnalyticsProps> = ({
           {uploadedFiles.map(file => (
             <TabsContent key={file.id} value={file.id} className="space-y-6">
               {/* Statistics Overview */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-4">
                 <Card>
                   <CardHeader className="pb-3">
                     <CardTitle className="text-sm font-medium">Total Income</CardTitle>
@@ -391,7 +391,7 @@ const PreviousDataAnalytics: React.FC<PreviousDataAnalyticsProps> = ({
               </div>
 
               {/* Charts */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
                 {/* Category Breakdown */}
                 <Card>
                   <CardHeader>
@@ -401,7 +401,7 @@ const PreviousDataAnalytics: React.FC<PreviousDataAnalyticsProps> = ({
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="h-80">
+                    <div className="h-64 sm:h-80">
                       <ResponsiveContainer width="100%" height="100%">
                         <RechartsPieChart>
                           <Pie
@@ -442,7 +442,7 @@ const PreviousDataAnalytics: React.FC<PreviousDataAnalyticsProps> = ({
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="h-80">
+                    <div className="h-64 sm:h-80">
                       <ResponsiveContainer width="100%" height="100%">
                         <BarChart data={getMonthlyData(file.transactions)}>
                           <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--muted))" />
