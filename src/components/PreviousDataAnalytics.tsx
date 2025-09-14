@@ -228,7 +228,8 @@ const PreviousDataAnalytics: React.FC<PreviousDataAnalyticsProps> = ({
   const activeFileData = uploadedFiles.find(f => f.id === activeTab);
 
   return (
-    <div className="min-h-screen bg-background p-2 sm:p-4">
+    <div className="fixed inset-0 z-50 bg-background overflow-y-auto">
+      <div className="min-h-full p-2 sm:p-4">
       {/* Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 sm:mb-6 gap-4">
         <div>
@@ -503,6 +504,7 @@ const PreviousDataAnalytics: React.FC<PreviousDataAnalyticsProps> = ({
           ))}
         </Tabs>
       )}
+      </div>
     </div>
   );
 };

@@ -19,6 +19,10 @@ export interface ExpenseContextType {
   getTotalExpense: () => number;
   getBalance: () => number;
   getCategoryTotals: () => Record<string, { total: number; count: number }>;
+  addCustomCategory: (category: Omit<Category, 'id'>) => Category;
+  updateCustomCategory: (id: string, category: Partial<Category>) => void;
+  deleteCustomCategory: (id: string) => void;
+  getAllCategories: () => Category[];
 }
 
 export interface Category {

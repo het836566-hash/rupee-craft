@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { Transaction, ExpenseContextType } from '@/types/expense';
+import { Transaction, ExpenseContextType, Category } from '@/types/expense';
+import { defaultCategories } from '@/constants/categories';
 
 const ExpenseContext = createContext<ExpenseContextType | undefined>(undefined);
 
@@ -13,6 +14,7 @@ export const useExpense = () => {
 
 export const ExpenseProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [customCategories, setCustomCategories] = useState<Category[]>([]);
 
   // Load transactions from localStorage on mount
   useEffect(() => {
@@ -26,10 +28,27 @@ export const ExpenseProvider: React.FC<{ children: React.ReactNode }> = ({ child
     }
   }, []);
 
+  // Load custom categories from localStorage on mount
+  useEffect(() => {
+    const saved = localStorage.getItem('expense-tracker-custom-categories');
+    if (saved) {
+      try {
+        setCustomCategories(JSON.parse(saved));
+      } catch (error) {
+        console.error('Error loading custom categories:', error);
+      }
+    }
+  }, []);
+
   // Save transactions to localStorage whenever they change
   useEffect(() => {
     localStorage.setItem('expense-tracker-transactions', JSON.stringify(transactions));
   }, [transactions]);
+
+  // Save custom categories to localStorage whenever they change
+  useEffect(() => {
+    localStorage.setItem('expense-tracker-custom-categories', JSON.stringify(customCategories));
+  }, [customCategories]);
 
   const addTransaction = (transaction: Omit<Transaction, 'id' | 'createdAt'>) => {
     const newTransaction: Transaction = {
@@ -114,6 +133,33 @@ export const ExpenseProvider: React.FC<{ children: React.ReactNode }> = ({ child
     return categoryTotals;
   };
 
+  const addCustomCategory = (category: Omit<Category, 'id'>) => {
+    const newCategory: Category = {
+      ...category,
+      id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+    };
+    setCustomCategories(prev => [...prev, newCategory]);
+    return newCategory;
+  };
+
+  const updateCustomCategory = (id: string, updatedCategory: Partial<Category>) => {
+    setCustomCategories(prev =>
+      prev.map(category =>
+        category.id === id
+          ? { ...category, ...updatedCategory }
+          : category
+      )
+    );
+  };
+
+  const deleteCustomCategory = (id: string) => {
+    setCustomCategories(prev => prev.filter(category => category.id !== id));
+  };
+
+  const getAllCategories = (): Category[] => {
+    return [...defaultCategories, ...customCategories];
+  };
+
   const value: ExpenseContextType = {
     transactions,
     addTransaction,
@@ -125,6 +171,10 @@ export const ExpenseProvider: React.FC<{ children: React.ReactNode }> = ({ child
     getTotalExpense,
     getBalance,
     getCategoryTotals,
+    addCustomCategory,
+    updateCustomCategory,
+    deleteCustomCategory,
+    getAllCategories,
   };
 
   return (
