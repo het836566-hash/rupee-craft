@@ -64,30 +64,51 @@ const Settings: React.FC = () => {
         const json = JSON.stringify(dataToExport, null, 2);
 
         if (platform === 'android') {
-          // Request permissions on Android, then write into Downloads
-          try { await (Filesystem as any).requestPermissions?.(); } catch {}
-          const androidDownloadsDir = (Directory as any).ExternalStorage || (Directory as any).External || Directory.Documents;
-          await Filesystem.writeFile({
-            path: `Download/${filename}`,
-            data: json,
-            directory: androidDownloadsDir,
-            encoding: Encoding.UTF8,
-          });
+          // Try to save in app's private folder first, then fallback to Downloads
+          let savedLocation = '';
+          try {
+            // First attempt: Save to app's private data directory
+            await Filesystem.writeFile({
+              path: `exports/${filename}`,
+              data: json,
+              directory: Directory.Data,
+              encoding: Encoding.UTF8,
+            });
+            savedLocation = `App's private folder: exports/${filename}`;
+          } catch (privateError) {
+            console.log('Private folder failed, trying Downloads:', privateError);
+            try {
+              // Fallback: Save to Downloads folder
+              await (Filesystem as any).requestPermissions?.();
+              const androidDownloadsDir = (Directory as any).ExternalStorage || (Directory as any).External || Directory.Documents;
+              await Filesystem.writeFile({
+                path: `Download/${filename}`,
+                data: json,
+                directory: androidDownloadsDir,
+                encoding: Encoding.UTF8,
+              });
+              savedLocation = `Downloads/${filename}`;
+            } catch (downloadError) {
+              console.error('Both private and Downloads failed:', downloadError);
+              throw new Error('Failed to save to both private folder and Downloads');
+            }
+          }
+          
           toast({
-            title: "Exported to Downloads",
-            description: `Saved as Downloads/${filename}. Check your Files app or notification panel.`,
+            title: "Exported successfully",
+            description: `Saved to: ${savedLocation}. File is secure in your app's storage.`,
           });
         } else {
-          // iOS: save into Documents
+          // iOS: save into app's Documents directory (private to app)
           await Filesystem.writeFile({
-            path: filename,
+            path: `exports/${filename}`,
             data: json,
             directory: Directory.Documents,
             encoding: Encoding.UTF8,
           });
           toast({
             title: "Exported",
-            description: `Saved to Documents/${filename}.`,
+            description: `Saved to app's Documents: exports/${filename}`,
           });
         }
       } else {
