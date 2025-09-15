@@ -46,6 +46,16 @@ export const FriendsProvider: React.FC<{ children: React.ReactNode }> = ({ child
     localStorage.setItem('expense-tracker-friend-transactions', JSON.stringify(friendTransactions));
   }, [friendTransactions]);
 
+  // Recalculate all friend balances when transactions change
+  useEffect(() => {
+    setFriends(prevFriends => 
+      prevFriends.map(friend => ({
+        ...friend,
+        totalBalance: calculateFriendBalance(friend.id)
+      }))
+    );
+  }, [friendTransactions]);
+
   const calculateFriendBalance = (friendId: string): number => {
     return friendTransactions
       .filter(t => t.friendId === friendId)
@@ -87,29 +97,7 @@ export const FriendsProvider: React.FC<{ children: React.ReactNode }> = ({ child
       createdAt: new Date().toISOString(),
     };
 
-    setFriendTransactions(prev => {
-      const updatedTransactions = [...prev, newTransaction];
-      
-      // Calculate new balance with the updated transactions list
-      const newBalance = updatedTransactions
-        .filter(t => t.friendId === transactionData.friendId)
-        .reduce((balance, transaction) => {
-          return transaction.type === 'lent' 
-            ? balance + transaction.amount  // they owe you
-            : balance - transaction.amount; // you owe them
-        }, 0);
-      
-      // Update friend's balance
-      setFriends(prevFriends => 
-        prevFriends.map(friend => 
-          friend.id === transactionData.friendId 
-            ? { ...friend, totalBalance: newBalance }
-            : friend
-        )
-      );
-      
-      return updatedTransactions;
-    });
+    setFriendTransactions(prev => [...prev, newTransaction]);
   };
 
   const updateFriendTransaction = (id: string, updatedTransaction: Partial<FriendTransaction>) => {
@@ -118,24 +106,10 @@ export const FriendsProvider: React.FC<{ children: React.ReactNode }> = ({ child
         transaction.id === id ? { ...transaction, ...updatedTransaction } : transaction
       )
     );
-
-    // Recalculate and update friend's balance
-    const transaction = friendTransactions.find(t => t.id === id);
-    if (transaction) {
-      const newBalance = calculateFriendBalance(transaction.friendId);
-      updateFriend(transaction.friendId, { totalBalance: newBalance });
-    }
   };
 
   const deleteFriendTransaction = (id: string) => {
-    const transaction = friendTransactions.find(t => t.id === id);
     setFriendTransactions(prev => prev.filter(t => t.id !== id));
-
-    // Recalculate and update friend's balance
-    if (transaction) {
-      const newBalance = calculateFriendBalance(transaction.friendId);
-      updateFriend(transaction.friendId, { totalBalance: newBalance });
-    }
   };
 
   const getFriendBalance = (friendId: string): number => {
