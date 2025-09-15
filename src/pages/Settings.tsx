@@ -23,6 +23,8 @@ import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import PreviousDataAnalytics from '@/components/PreviousDataAnalytics';
 import CategoriesView from '@/components/CategoriesView';
+import { Capacitor } from '@capacitor/core';
+import { Filesystem, Directory, Encoding } from '@capacitor/filesystem';
 
 const Settings: React.FC = () => {
   const { transactions } = useExpense();
@@ -37,7 +39,7 @@ const Settings: React.FC = () => {
   const [importValidationError, setImportValidationError] = useState<string | null>(null);
   const [showCategories, setShowCategories] = useState(false);
 
-  const handleExportData = () => {
+  const handleExportData = async () => {
     if (!customFilename.trim()) {
       toast({
         title: "Filename required",
@@ -47,40 +49,72 @@ const Settings: React.FC = () => {
       return;
     }
 
+    const dataToExport = {
+      transactions,
+      exportDate: new Date().toISOString(),
+      version: '1.0.0',
+    };
+
+    const filename = customFilename.endsWith('.json') ? customFilename : `${customFilename}.json`;
+
     try {
-      const dataToExport = {
-        transactions,
-        exportDate: new Date().toISOString(),
-        version: '1.0.0',
-      };
+      const platform = Capacitor.getPlatform ? Capacitor.getPlatform() : 'web';
 
-      const blob = new Blob([JSON.stringify(dataToExport, null, 2)], {
-        type: 'application/json',
-      });
+      if (platform !== 'web') {
+        const json = JSON.stringify(dataToExport, null, 2);
 
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      const filename = customFilename.endsWith('.json') ? customFilename : `${customFilename}.json`;
-      a.download = filename;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
+        if (platform === 'android') {
+          // Request permissions on Android, then write into Downloads
+          try { await (Filesystem as any).requestPermissions?.(); } catch {}
+          const androidDownloadsDir = (Directory as any).ExternalStorage || (Directory as any).External || Directory.Documents;
+          await Filesystem.writeFile({
+            path: `Download/${filename}`,
+            data: json,
+            directory: androidDownloadsDir,
+            encoding: Encoding.UTF8,
+          });
+          toast({
+            title: "Exported to Downloads",
+            description: `Saved as Downloads/${filename}. Check your Files app or notification panel.`,
+          });
+        } else {
+          // iOS: save into Documents
+          await Filesystem.writeFile({
+            path: filename,
+            data: json,
+            directory: Directory.Documents,
+            encoding: Encoding.UTF8,
+          });
+          toast({
+            title: "Exported",
+            description: `Saved to Documents/${filename}.`,
+          });
+        }
+      } else {
+        // Web fallback: trigger download
+        const blob = new Blob([JSON.stringify(dataToExport, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
 
-      // For mobile devices, provide better feedback about download location
-      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-      
-      toast({
-        title: "Data exported successfully",
-        description: isMobile 
-          ? `File downloaded as ${filename}. Check your Downloads folder or notification panel.`
-          : `Your transaction data has been downloaded as ${filename}.`,
-      });
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        toast({
+          title: "Data exported successfully",
+          description: isMobile 
+            ? `File downloaded as ${filename}. Check your Downloads folder or notification panel.`
+            : `Your transaction data has been downloaded as ${filename}.`,
+        });
+      }
 
       setIsExportDialogOpen(false);
       setCustomFilename('');
     } catch (error) {
+      console.error('Export error:', error);
       toast({
         title: "Export failed",
         description: "An error occurred while exporting your data.",
