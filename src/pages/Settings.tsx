@@ -68,9 +68,14 @@ const Settings: React.FC = () => {
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
 
+      // For mobile devices, provide better feedback about download location
+      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+      
       toast({
-        title: "Data exported",
-        description: `Your transaction data has been downloaded as ${filename}.`,
+        title: "Data exported successfully",
+        description: isMobile 
+          ? `File downloaded as ${filename}. Check your Downloads folder or notification panel.`
+          : `Your transaction data has been downloaded as ${filename}.`,
       });
 
       setIsExportDialogOpen(false);

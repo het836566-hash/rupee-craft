@@ -87,11 +87,29 @@ export const FriendsProvider: React.FC<{ children: React.ReactNode }> = ({ child
       createdAt: new Date().toISOString(),
     };
 
-    setFriendTransactions(prev => [...prev, newTransaction]);
-
-    // Update friend's balance
-    const newBalance = calculateFriendBalance(transactionData.friendId);
-    updateFriend(transactionData.friendId, { totalBalance: newBalance });
+    setFriendTransactions(prev => {
+      const updatedTransactions = [...prev, newTransaction];
+      
+      // Calculate new balance with the updated transactions list
+      const newBalance = updatedTransactions
+        .filter(t => t.friendId === transactionData.friendId)
+        .reduce((balance, transaction) => {
+          return transaction.type === 'lent' 
+            ? balance + transaction.amount  // they owe you
+            : balance - transaction.amount; // you owe them
+        }, 0);
+      
+      // Update friend's balance
+      setFriends(prevFriends => 
+        prevFriends.map(friend => 
+          friend.id === transactionData.friendId 
+            ? { ...friend, totalBalance: newBalance }
+            : friend
+        )
+      );
+      
+      return updatedTransactions;
+    });
   };
 
   const updateFriendTransaction = (id: string, updatedTransaction: Partial<FriendTransaction>) => {

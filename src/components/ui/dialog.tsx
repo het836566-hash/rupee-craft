@@ -99,7 +99,7 @@ const DialogContent = React.forwardRef<
         )}
         style={{
           touchAction: 'none',           // Completely disable touch gestures
-          WebkitUserDrag: 'none',        // Disable dragging
+          userDrag: 'none' as any,       // Disable dragging
           WebkitTouchCallout: 'none',    // Disable iOS callout
           userSelect: 'none',            // Disable text selection
           WebkitUserSelect: 'none',
@@ -109,7 +109,7 @@ const DialogContent = React.forwardRef<
           left: '50%',
           top: '50%',
           transform: 'translate(-50%, -50%)'
-        }}
+        } as React.CSSProperties}
         {...props}
       >
         {children}
