@@ -38,7 +38,8 @@ const Home: React.FC = () => {
       );
     }
 
-    return filtered;
+    // Sort by date (most recent first)
+    return filtered.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
   }, [transactions, searchQuery, dateFilter, selectedCategory, filterTransactionsByDate]);
 
   return (

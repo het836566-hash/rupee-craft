@@ -17,12 +17,17 @@ import {
   Moon,
   BarChart3,
   Grid3X3,
-  Tag
+  Tag,
+  Target,
+  Users,
+  X
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import PreviousDataAnalytics from '@/components/PreviousDataAnalytics';
 import CategoriesView from '@/components/CategoriesView';
+import Budget from '@/pages/Budget';
+import Split from '@/pages/Split';
 import { Capacitor } from '@capacitor/core';
 import { Filesystem, Directory, Encoding } from '@capacitor/filesystem';
 
@@ -38,6 +43,8 @@ const Settings: React.FC = () => {
   const [pendingImportFile, setPendingImportFile] = useState<File | null>(null);
   const [importValidationError, setImportValidationError] = useState<string | null>(null);
   const [showCategories, setShowCategories] = useState(false);
+  const [showBudget, setShowBudget] = useState(false);
+  const [showSplit, setShowSplit] = useState(false);
 
   const handleExportData = async () => {
     if (!customFilename.trim()) {
@@ -300,6 +307,24 @@ const Settings: React.FC = () => {
           description: 'Currently enabled (cannot be changed)',
           icon: Moon,
           disabled: true,
+        },
+      ],
+    },
+    {
+      title: 'More Features',
+      icon: Target,
+      items: [
+        {
+          title: 'Budget Tracker',
+          description: 'Set and track spending goals for specific purposes',
+          icon: Target,
+          action: () => setShowBudget(true),
+        },
+        {
+          title: 'Split Expenses',
+          description: 'Track shared expenses with friends and calculate settlements',
+          icon: Users,
+          action: () => setShowSplit(true),
         },
       ],
     },
@@ -570,6 +595,36 @@ const Settings: React.FC = () => {
       {showCategories && (
         <div className="fixed inset-0 z-50 bg-background">
           <CategoriesView onClose={() => setShowCategories(false)} />
+        </div>
+      )}
+
+      {/* Budget Modal */}
+      {showBudget && (
+        <div className="fixed inset-0 z-50 bg-background">
+          <Budget />
+          <Button
+            onClick={() => setShowBudget(false)}
+            variant="outline"
+            className="fixed top-4 right-4 z-10"
+          >
+            <X className="w-4 h-4 mr-2" />
+            Close
+          </Button>
+        </div>
+      )}
+
+      {/* Split Modal */}
+      {showSplit && (
+        <div className="fixed inset-0 z-50 bg-background">
+          <Split />
+          <Button
+            onClick={() => setShowSplit(false)}
+            variant="outline"
+            className="fixed top-4 right-4 z-10"
+          >
+            <X className="w-4 h-4 mr-2" />
+            Close
+          </Button>
         </div>
       )}
     </div>

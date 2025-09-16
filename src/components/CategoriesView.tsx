@@ -16,7 +16,8 @@ import {
   Grid3X3,
   Package,
   DollarSign,
-  Plus
+  Plus,
+  Trash2
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
@@ -27,7 +28,7 @@ interface CategoriesViewProps {
 }
 
 const CategoriesView: React.FC<CategoriesViewProps> = ({ onClose }) => {
-  const { transactions, getCategoryTotals, getAllCategories, addCustomCategory } = useExpense();
+  const { transactions, getCategoryTotals, getAllCategories, addCustomCategory, deleteCustomCategory } = useExpense();
   const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState('');
   const [filterType, setFilterType] = useState<'all' | 'income' | 'expense'>('all');
@@ -461,6 +462,30 @@ const CategoriesView: React.FC<CategoriesViewProps> = ({ onClose }) => {
                       </Badge>
                     </div>
                   </div>
+                  {category.id.startsWith('custom-') && (
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => {
+                        if (isUsed) {
+                          toast({
+                            title: "Cannot delete",
+                            description: "This category is being used in transactions",
+                            variant: "destructive"
+                          });
+                        } else {
+                          deleteCustomCategory(category.id);
+                          toast({
+                            title: "Success",
+                            description: "Category deleted successfully"
+                          });
+                        }
+                      }}
+                      className="text-destructive hover:bg-destructive/10"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  )}
                 </div>
 
                 {isUsed ? (
