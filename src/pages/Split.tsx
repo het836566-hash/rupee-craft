@@ -153,7 +153,7 @@ const Split: React.FC = () => {
                 </Button>
               </DialogTrigger>
               <DialogContent className="max-w-md">
-                <DialogHeader>
+                <DialogHeader className="pb-4">
                   <DialogTitle>Create Split Group</DialogTitle>
                 </DialogHeader>
                 <div className="space-y-4">
@@ -310,7 +310,7 @@ const Split: React.FC = () => {
       {/* Add Expense Dialog */}
       <Dialog open={isExpenseDialogOpen} onOpenChange={setIsExpenseDialogOpen}>
         <DialogContent className="max-w-md">
-          <DialogHeader>
+          <DialogHeader className="pb-4">
             <DialogTitle>Add Expense</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
@@ -339,7 +339,7 @@ const Split: React.FC = () => {
                 <SelectTrigger>
                   <SelectValue placeholder="Who paid?" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-background border border-border">
                   {selectedGroupId && splitGroups.find(g => g.id === selectedGroupId)?.members.map(memberId => (
                     <SelectItem key={memberId} value={memberId}>
                       {getFriendName(memberId)}

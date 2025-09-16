@@ -134,8 +134,8 @@ const Budget: React.FC = () => {
                   Add Budget
                 </Button>
               </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
+              <DialogContent className="max-w-md">
+                <DialogHeader className="pb-4">
                   <DialogTitle>Create New Budget</DialogTitle>
                 </DialogHeader>
                 <div className="space-y-4">
@@ -173,7 +173,7 @@ const Budget: React.FC = () => {
                       <SelectTrigger>
                         <SelectValue placeholder="Select category" />
                       </SelectTrigger>
-                      <SelectContent>
+                      <SelectContent className="bg-background border border-border">
                         {categories.map((category) => (
                           <SelectItem key={category.id} value={category.name}>
                             {category.icon} {category.name}
@@ -315,8 +315,8 @@ const Budget: React.FC = () => {
 
       {/* Add Transaction Dialog */}
       <Dialog open={isTransactionDialogOpen} onOpenChange={setIsTransactionDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
+        <DialogContent className="max-w-md">
+          <DialogHeader className="pb-4">
             <DialogTitle>Add Expense to Budget</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
