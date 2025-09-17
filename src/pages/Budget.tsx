@@ -135,13 +135,82 @@ const Budget: React.FC = () => {
                 </Button>
               </DialogTrigger>
               <DialogContent className="max-w-md">
-...
+                <DialogHeader className="pb-4">
+                  <DialogTitle>Create New Budget</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-4">
+                  <div>
+                    <Label htmlFor="name">Budget Name</Label>
+                    <Input
+                      id="name"
+                      value={newBudget.name}
+                      onChange={(e) => setNewBudget(prev => ({ ...prev, name: e.target.value }))}
+                      placeholder="e.g., Diwali Shopping"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="description">Description (Optional)</Label>
+                    <Textarea
+                      id="description"
+                      value={newBudget.description}
+                      onChange={(e) => setNewBudget(prev => ({ ...prev, description: e.target.value }))}
+                      placeholder="Budget details..."
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="amount">Target Amount</Label>
+                    <Input
+                      id="amount"
+                      type="number"
+                      value={newBudget.targetAmount}
+                      onChange={(e) => setNewBudget(prev => ({ ...prev, targetAmount: e.target.value }))}
+                      placeholder="5000"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="category">Category</Label>
+                    <Select value={newBudget.category} onValueChange={(value) => setNewBudget(prev => ({ ...prev, category: value }))}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select category" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-background border border-border">
+                        {categories.map((category) => (
+                          <SelectItem key={category.id} value={category.name}>
+                            {category.icon} {category.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label htmlFor="startDate">Start Date</Label>
+                    <Input
+                      id="startDate"
+                      type="date"
+                      value={newBudget.startDate}
+                      onChange={(e) => setNewBudget(prev => ({ ...prev, startDate: e.target.value }))}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="endDate">End Date</Label>
+                    <Input
+                      id="endDate"
+                      type="date"
+                      value={newBudget.endDate}
+                      onChange={(e) => setNewBudget(prev => ({ ...prev, endDate: e.target.value }))}
+                    />
+                  </div>
+                  <div className="flex gap-2">
+                    <Button onClick={handleAddBudget} className="flex-1">
+                      Create Budget
+                    </Button>
+                    <Button variant="outline" onClick={() => setIsBudgetDialogOpen(false)} className="flex-1">
+                      Cancel
+                    </Button>
+                  </div>
+                </div>
               </DialogContent>
             </Dialog>
-            <Button variant="ghost" size="sm" onClick={() => window.history.back()}>
-              <X className="w-4 h-4 mr-1" />
-              Close
-            </Button>
           </div>
         </div>
       </div>

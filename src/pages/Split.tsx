@@ -153,13 +153,59 @@ const Split: React.FC = () => {
                 </Button>
               </DialogTrigger>
               <DialogContent className="max-w-md">
-...
+                <DialogHeader className="pb-4">
+                  <DialogTitle>Create Split Group</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-4">
+                  <div>
+                    <Label htmlFor="groupName">Group Name</Label>
+                    <Input
+                      id="groupName"
+                      value={newGroup.name}
+                      onChange={(e) => setNewGroup(prev => ({ ...prev, name: e.target.value }))}
+                      placeholder="e.g., Goa Trip 2024"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="groupDesc">Description (Optional)</Label>
+                    <Textarea
+                      id="groupDesc"
+                      value={newGroup.description}
+                      onChange={(e) => setNewGroup(prev => ({ ...prev, description: e.target.value }))}
+                      placeholder="Trip details..."
+                    />
+                  </div>
+                  <div>
+                    <Label>Select Members</Label>
+                    <div className="space-y-2 max-h-40 overflow-y-auto">
+                      {friends.map((friend) => (
+                        <div key={friend.id} className="flex items-center space-x-2">
+                          <Checkbox
+                            id={friend.id}
+                            checked={newGroup.members.includes(friend.id)}
+                            onCheckedChange={() => toggleMember(friend.id, 'members')}
+                          />
+                          <Label htmlFor={friend.id} className="flex-1 cursor-pointer">
+                            {friend.name}
+                          </Label>
+                        </div>
+                      ))}
+                    </div>
+                    {friends.length === 0 && (
+                      <p className="text-sm text-muted-foreground">No friends added yet. Add friends first.</p>
+                    )}
+                  </div>
+                  <div className="flex gap-2">
+                    <Button onClick={handleAddGroup} className="flex-1" disabled={friends.length === 0}>
+                      Create Group
+                    </Button>
+                    <Button variant="outline" onClick={() => setIsGroupDialogOpen(false)} className="flex-1">
+                      Cancel
+                    </Button>
+                  </div>
+                </div>
               </DialogContent>
             </Dialog>
-            <Button variant="ghost" size="sm" onClick={() => window.history.back()}>
-              <X className="w-4 h-4 mr-1" />
-              Close
-            </Button>
           </div>
         </div>
       </div>
