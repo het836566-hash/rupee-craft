@@ -1,5 +1,8 @@
 import React, { useState } from 'react';
 import { useExpense } from '@/contexts/ExpenseContext';
+import { useBudget } from '@/contexts/BudgetContext';
+import { useSplit } from '@/contexts/SplitContext';
+import { useFriends } from '@/contexts/FriendsContext';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -33,6 +36,9 @@ import { Filesystem, Directory, Encoding } from '@capacitor/filesystem';
 
 const Settings: React.FC = () => {
   const { transactions } = useExpense();
+  const { budgets, budgetTransactions } = useBudget();
+  const { splitGroups, splitExpenses } = useSplit();
+  const { friends, friendTransactions } = useFriends();
   const { toast } = useToast();
   const [isExportDialogOpen, setIsExportDialogOpen] = useState(false);
   const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
@@ -58,6 +64,12 @@ const Settings: React.FC = () => {
 
     const dataToExport = {
       transactions,
+      budgets,
+      budgetTransactions,
+      splitGroups,
+      splitExpenses,
+      friends,
+      friendTransactions,
       exportDate: new Date().toISOString(),
       version: '1.0.0',
     };
@@ -158,6 +170,7 @@ const Settings: React.FC = () => {
         try {
           const importedData = JSON.parse(e.target?.result as string);
           
+          // Validate required arrays exist
           if (!importedData.transactions || !Array.isArray(importedData.transactions)) {
             resolve({ isValid: false, error: 'Invalid file format - missing transactions array' });
             return;
@@ -166,6 +179,14 @@ const Settings: React.FC = () => {
           const validTransactions = importedData.transactions.filter((t: any) => 
             t.id && t.type && t.amount && t.category && t.date
           );
+
+          // Validate optional arrays (set to empty if missing)
+          const validBudgets = Array.isArray(importedData.budgets) ? importedData.budgets : [];
+          const validBudgetTransactions = Array.isArray(importedData.budgetTransactions) ? importedData.budgetTransactions : [];
+          const validSplitGroups = Array.isArray(importedData.splitGroups) ? importedData.splitGroups : [];
+          const validSplitExpenses = Array.isArray(importedData.splitExpenses) ? importedData.splitExpenses : [];
+          const validFriends = Array.isArray(importedData.friends) ? importedData.friends : [];
+          const validFriendTransactions = Array.isArray(importedData.friendTransactions) ? importedData.friendTransactions : [];
 
           if (validTransactions.length === 0) {
             resolve({ isValid: false, error: 'No valid transactions found in file' });
@@ -176,7 +197,17 @@ const Settings: React.FC = () => {
           
           resolve({ 
             isValid: true, 
-            data: { ...importedData, validTransactions, hasInvalidTransactions }
+            data: { 
+              ...importedData, 
+              validTransactions, 
+              validBudgets,
+              validBudgetTransactions,
+              validSplitGroups,
+              validSplitExpenses,
+              validFriends,
+              validFriendTransactions,
+              hasInvalidTransactions 
+            }
           });
         } catch (error) {
           resolve({ isValid: false, error: 'Invalid JSON format' });
@@ -214,7 +245,16 @@ const Settings: React.FC = () => {
       return;
     }
 
-    const { validTransactions, hasInvalidTransactions } = validation.data;
+    const { 
+      validTransactions, 
+      validBudgets,
+      validBudgetTransactions,
+      validSplitGroups,
+      validSplitExpenses,
+      validFriends,
+      validFriendTransactions,
+      hasInvalidTransactions 
+    } = validation.data;
 
     if (hasInvalidTransactions) {
       setImportValidationError(`File contains some invalid transactions. Only ${validTransactions.length} valid transactions will be imported.`);
@@ -222,12 +262,19 @@ const Settings: React.FC = () => {
       return;
     }
 
-    // Import the data
+    // Import all data
     localStorage.setItem('expense-tracker-transactions', JSON.stringify(validTransactions));
+    localStorage.setItem('expense-tracker-budgets', JSON.stringify(validBudgets));
+    localStorage.setItem('expense-tracker-budget-transactions', JSON.stringify(validBudgetTransactions));
+    localStorage.setItem('expense-tracker-split-groups', JSON.stringify(validSplitGroups));
+    localStorage.setItem('expense-tracker-split-expenses', JSON.stringify(validSplitExpenses));
+    localStorage.setItem('expense-tracker-friends', JSON.stringify(validFriends));
+    localStorage.setItem('expense-tracker-friend-transactions', JSON.stringify(validFriendTransactions));
     
+    const totalImported = validTransactions.length + validBudgets.length + validSplitGroups.length + validFriends.length;
     toast({
       title: "Import successful",
-      description: `Imported ${validTransactions.length} transactions. Refreshing app...`,
+      description: `Imported ${validTransactions.length} transactions, ${validBudgets.length} budgets, ${validSplitGroups.length} split groups, and ${validFriends.length} friends. Refreshing app...`,
     });
     
     setTimeout(() => {
@@ -252,6 +299,13 @@ const Settings: React.FC = () => {
 
   const handleClearAllData = () => {
     localStorage.removeItem('expense-tracker-transactions');
+    localStorage.removeItem('expense-tracker-budgets');
+    localStorage.removeItem('expense-tracker-budget-transactions');
+    localStorage.removeItem('expense-tracker-split-groups');
+    localStorage.removeItem('expense-tracker-split-expenses');
+    localStorage.removeItem('expense-tracker-friends');
+    localStorage.removeItem('expense-tracker-friend-transactions');
+    localStorage.removeItem('expense-tracker-custom-categories');
     window.location.reload();
   };
 
@@ -268,7 +322,7 @@ const Settings: React.FC = () => {
             setCustomFilename(`expense-backup-${new Date().toISOString().split('T')[0]}`);
             setIsExportDialogOpen(true);
           },
-          disabled: transactions.length === 0,
+          disabled: transactions.length === 0 && budgets.length === 0 && splitGroups.length === 0 && friends.length === 0,
         },
         {
           title: 'Import Data',
@@ -294,7 +348,7 @@ const Settings: React.FC = () => {
           icon: Trash2,
           action: () => setIsClearDialogOpen(true),
           danger: true,
-          disabled: transactions.length === 0,
+          disabled: transactions.length === 0 && budgets.length === 0 && splitGroups.length === 0 && friends.length === 0,
         },
       ],
     },
@@ -365,25 +419,25 @@ const Settings: React.FC = () => {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="text-center">
               <p className="text-2xl font-bold text-primary">{transactions.length}</p>
-              <p className="text-sm text-muted-foreground">Total Transactions</p>
+              <p className="text-sm text-muted-foreground">Transactions</p>
             </div>
             <div className="text-center">
               <p className="text-2xl font-bold text-income">
-                {transactions.filter(t => t.type === 'income').length}
+                {budgets.length}
               </p>
-              <p className="text-sm text-muted-foreground">Income Records</p>
+              <p className="text-sm text-muted-foreground">Budgets</p>
             </div>
             <div className="text-center">
               <p className="text-2xl font-bold text-expense">
-                {transactions.filter(t => t.type === 'expense').length}
+                {friends.length}
               </p>
-              <p className="text-sm text-muted-foreground">Expense Records</p>
+              <p className="text-sm text-muted-foreground">Friends</p>
             </div>
             <div className="text-center">
               <p className="text-2xl font-bold text-accent">
-                {Math.round((JSON.stringify(transactions).length / 1024) * 100) / 100}
+                {splitGroups.length}
               </p>
-              <p className="text-sm text-muted-foreground">Data Size (KB)</p>
+              <p className="text-sm text-muted-foreground">Split Groups</p>
             </div>
           </div>
         </div>
@@ -440,7 +494,7 @@ const Settings: React.FC = () => {
             <Alert>
               <Info className="w-4 h-4" />
               <AlertDescription>
-                This will download a JSON file containing all your transaction data. 
+                This will download a JSON file containing all your data including transactions, budgets, friends, and split expenses. 
                 Keep this file safe as a backup.
               </AlertDescription>
             </Alert>
@@ -489,8 +543,8 @@ const Settings: React.FC = () => {
             <Alert>
               <Info className="w-4 h-4" />
               <AlertDescription>
-                Select a JSON backup file to restore your transaction data. 
-                {transactions.length > 0 && "This will replace your current data."}
+                Select a JSON backup file to restore all your data including transactions, budgets, friends, and split expenses. 
+                {(transactions.length > 0 || budgets.length > 0 || friends.length > 0 || splitGroups.length > 0) && "This will replace your current data."}
               </AlertDescription>
             </Alert>
             <input
@@ -523,7 +577,7 @@ const Settings: React.FC = () => {
               <Info className="w-4 h-4" />
               <AlertDescription>
                 {importValidationError || 
-                  `You have ${transactions.length} existing transactions. Importing this file will permanently replace all your current data. This action cannot be undone.`
+                  `You have ${transactions.length} transactions, ${budgets.length} budgets, ${friends.length} friends, and ${splitGroups.length} split groups. Importing this file will permanently replace all your current data. This action cannot be undone.`
                 }
               </AlertDescription>
             </Alert>

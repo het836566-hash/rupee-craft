@@ -161,7 +161,8 @@ const CategoriesView: React.FC<CategoriesViewProps> = ({ onClose }) => {
                 Add Category
               </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
+            <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto overscroll-contain"
+              onOpenAutoFocus={(e) => e.preventDefault()}>
               <DialogHeader>
                 <DialogTitle>Add New Category</DialogTitle>
                 <DialogDescription>
