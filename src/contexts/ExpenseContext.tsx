@@ -136,7 +136,7 @@ export const ExpenseProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const addCustomCategory = (category: Omit<Category, 'id'>) => {
     const newCategory: Category = {
       ...category,
-      id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+      id: 'custom-' + Date.now().toString() + Math.random().toString(36).substr(2, 9),
     };
     setCustomCategories(prev => [...prev, newCategory]);
     return newCategory;
