@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Progress } from '@/components/ui/progress';
-import { Target, Plus, Wallet, Calendar, Trash2, Edit, DollarSign } from 'lucide-react';
+import { Target, Plus, Wallet, Calendar, Trash2, Edit, DollarSign, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
@@ -119,100 +119,29 @@ const Budget: React.FC = () => {
       {/* Header */}
       <div className="sticky top-0 z-10 bg-background/80 backdrop-blur-md border-b border-card-border">
         <div className="p-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-bold flex items-center gap-2">
-                <Target className="w-6 h-6 text-primary" />
-                Budget Tracker
-              </h1>
-              <p className="text-muted-foreground">Set and track your spending goals</p>
-            </div>
+          <div className="mb-4">
+            <h1 className="text-2xl font-bold flex items-center gap-2">
+              <Target className="w-6 h-6 text-primary" />
+              Budget Tracker
+            </h1>
+            <p className="text-muted-foreground">Set and track your spending goals</p>
+          </div>
+          <div className="flex items-center gap-3">
             <Dialog open={isBudgetDialogOpen} onOpenChange={setIsBudgetDialogOpen}>
               <DialogTrigger asChild>
-                <Button>
+                <Button className="flex-1 bg-primary hover:bg-primary/90">
                   <Plus className="w-4 h-4 mr-2" />
                   Add Budget
                 </Button>
               </DialogTrigger>
               <DialogContent className="max-w-md">
-                <DialogHeader className="pb-4">
-                  <DialogTitle>Create New Budget</DialogTitle>
-                </DialogHeader>
-                <div className="space-y-4">
-                  <div>
-                    <Label htmlFor="name">Budget Name</Label>
-                    <Input
-                      id="name"
-                      value={newBudget.name}
-                      onChange={(e) => setNewBudget(prev => ({ ...prev, name: e.target.value }))}
-                      placeholder="e.g., Diwali Shopping"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="description">Description (Optional)</Label>
-                    <Textarea
-                      id="description"
-                      value={newBudget.description}
-                      onChange={(e) => setNewBudget(prev => ({ ...prev, description: e.target.value }))}
-                      placeholder="Budget details..."
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="targetAmount">Target Amount</Label>
-                    <Input
-                      id="targetAmount"
-                      type="number"
-                      value={newBudget.targetAmount}
-                      onChange={(e) => setNewBudget(prev => ({ ...prev, targetAmount: e.target.value }))}
-                      placeholder="10000"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="category">Category</Label>
-                    <Select value={newBudget.category} onValueChange={(value) => setNewBudget(prev => ({ ...prev, category: value }))}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select category" />
-                      </SelectTrigger>
-                      <SelectContent className="bg-background border border-border">
-                        {categories.map((category) => (
-                          <SelectItem key={category.id} value={category.name}>
-                            {category.icon} {category.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="startDate">Start Date</Label>
-                      <Input
-                        id="startDate"
-                        type="date"
-                        value={newBudget.startDate}
-                        onChange={(e) => setNewBudget(prev => ({ ...prev, startDate: e.target.value }))}
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="endDate">End Date</Label>
-                      <Input
-                        id="endDate"
-                        type="date"
-                        value={newBudget.endDate}
-                        onChange={(e) => setNewBudget(prev => ({ ...prev, endDate: e.target.value }))}
-                      />
-                    </div>
-                  </div>
-                  <div className="flex gap-2">
-                    <Button onClick={handleAddBudget} className="flex-1">
-                      Create Budget
-                    </Button>
-                    <Button variant="outline" onClick={() => setIsBudgetDialogOpen(false)} className="flex-1">
-                      Cancel
-                    </Button>
-                  </div>
-                </div>
+...
               </DialogContent>
             </Dialog>
+            <Button variant="ghost" size="sm" onClick={() => window.history.back()}>
+              <X className="w-4 h-4 mr-1" />
+              Close
+            </Button>
           </div>
         </div>
       </div>
