@@ -140,7 +140,7 @@ const CategoriesView: React.FC<CategoriesViewProps> = ({ onClose }) => {
   const stats = getUsageStats();
 
   return (
-    <div className="fixed inset-0 z-50 bg-background overflow-y-auto">
+    <div className="fixed inset-0 z-50 bg-background overflow-y-auto touch-pan-y">
       <div className="min-h-full p-2 sm:p-4">
       {/* Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 sm:mb-6 gap-4">
@@ -169,7 +169,7 @@ const CategoriesView: React.FC<CategoriesViewProps> = ({ onClose }) => {
                   Create a custom category for your transactions
                 </DialogDescription>
               </DialogHeader>
-              <div className="space-y-6 py-4">
+              <div className="space-y-6 py-4 flex-1 min-h-0 overflow-y-auto overscroll-contain pr-1 -mr-2">
                 {/* Category Name */}
                 <div className="space-y-2">
                   <Label htmlFor="name" className="text-sm font-medium">
